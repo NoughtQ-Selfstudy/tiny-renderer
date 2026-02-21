@@ -4,8 +4,8 @@
 #include "model.h"
 #include "tgaimage.h"
 
-constexpr int width  = 128;
-constexpr int height = 128;
+constexpr int width  = 800;
+constexpr int height = 800;
 
 constexpr TGAColor white   = {255, 255, 255, 255}; // attention, BGRA order
 constexpr TGAColor green   = {  0, 255,   0, 255};
@@ -38,18 +38,112 @@ void line(int ax, int ay, int bx, int by, TGAImage &framebuffer, TGAColor color)
     }
 }
 
+bool compareByY(const std::pair<int, int>& a, const std::pair<int, int>& b) {
+    return a.second < b.second;
+}
+
+// Method 1: Scanline Rendering
+void scanlineRendering(int ax, int ay, int bx, int by, int cx, int cy, 
+                       TGAImage &framebuffer, TGAColor color) {
+    std::vector<std::pair<int, int>> points{ {ax, ay}, {bx, by}, {cx, cy} };
+    std::sort(points.begin(), points.end(), compareByY);
+
+    int min_x = points[0].first, min_y = points[0].second;
+    int mid_x = points[1].first, mid_y = points[1].second;
+    int max_x = points[2].first, max_y = points[2].second;
+    int lx, rx;
+    for (int y = min_y; y <= max_y; ++y) {
+        if (y <= mid_y) {      // bottom-half
+            lx = min_x + (y - min_y) * (mid_x - min_x) / (mid_y - min_y);
+            rx = min_x + (y - min_y) * (max_x - min_x) / (max_y - min_y);
+        } else {               // top-half
+            lx = mid_x + (y - mid_y) * (max_x - mid_x) / (max_y - mid_y);
+            rx = min_x + (y - min_y) * (max_x - min_x) / (max_y - min_y);
+        }
+        if (lx > rx) std::swap(lx, rx);
+        for (int x = lx; x <= rx; ++x) {
+            framebuffer.set(x, y, color);
+        }
+    }
+}
+
+// Test if (x, y) is within the triangle composed of (ax, ay), (bx, by) and (cx, cy)
+bool isInside(int ax, int ay, int bx, int by, int cx, int cy, int x, int y) {
+    // cross product
+    int crossAB = (x - ax) * (by - ay) - (bx - ax) * (y - ay);
+    int crossBC = (x - bx) * (cy - by) - (cx - bx) * (y - by);
+    int crossCA = (x - cx) * (ay - cy) - (ax - cx) * (y - cy);
+    return (crossAB >= 0 && crossBC >= 0 && crossCA >= 0) ||
+           (crossAB <= 0 && crossBC <= 0 && crossCA <= 0);
+}
+
+double signedTriangleArea(int ax, int ay, int bx, int by, int cx, int cy) {
+    return .5 * ((bx - ax) * (cy - ay) - (cx - ax) * (by - ay));
+}
+
+// Method 2: Triangle Rasterization, Modern Apporach
+void modernRasterizer(int ax, int ay, int bx, int by, int cx, int cy, 
+                       TGAImage &framebuffer, TGAColor color) {
+    // bounding box
+    int bblx = std::min({ax, bx, cx}), bbrx = std::max({ax, bx, cx});
+    int bbby = std::min({ay, by, cy}), bbty = std::max({ay, by, cy});
+
+    for (int x = bblx; x <= bbrx; ++x) {
+        for (int y = bbby; y <= bbty; ++y) {
+            // if (x, y) is inside the triangle
+            if (isInside(ax, ay, bx, by, cx, cy, x, y)) {
+                framebuffer.set(x, y, color);
+            }
+        }
+    }
+}
+
 void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &framebuffer, TGAColor color) {
+    // back-face culling
+    if (signedTriangleArea(ax, ay, bx, by, cx, cy) < 1) return;
+
     line(ax, ay, bx, by, framebuffer, color);
     line(bx, by, cx, cy, framebuffer, color);
     line(cx, cy, ax, ay, framebuffer, color);
+    
+    // scanlineRendering(ax, ay, bx, by, cx, cy, framebuffer, color);
+    modernRasterizer(ax, ay, bx, by, cx, cy, framebuffer, color);
+}
+
+// int main(int argc, char** argv) {
+//     TGAImage framebuffer(width, height, TGAImage::RGB);
+//     triangle(  7, 45, 35, 100, 45,  60, framebuffer, red);
+//     triangle(120, 35, 90,   5, 45, 110, framebuffer, white);
+//     triangle(115, 83, 80,  90, 85, 120, framebuffer, green);
+//     framebuffer.write_tga_file("framebuffer.tga");
+//     return 0;
+// }
+
+std::tuple<int, int> project(vec3 v) {
+    int x = (v.x + 1.) / 2 * width;
+    int y = (v.y + 1.) / 2 * height;
+    return {x, y};
 }
 
 int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " obj/model.obj" << std::endl;
+        return 1;
+    }
+
+    std::srand(std::time(NULL));
+    Model model(argv[1]);
     TGAImage framebuffer(width, height, TGAImage::RGB);
-    triangle(  7, 45, 35, 100, 45,  60, framebuffer, red);
-    triangle(120, 35, 90,   5, 45, 110, framebuffer, white);
-    triangle(115, 83, 80,  90, 85, 120, framebuffer, green);
+
+    for (int i = 0; i < model.nfaces(); ++i) {
+        auto [ax, ay] = project(model.vert(i, 0));
+        auto [bx, by] = project(model.vert(i, 1));
+        auto [cx, cy] = project(model.vert(i, 2));
+        TGAColor color;
+        for (int j = 0; j < 3; ++j) color[j] = std::rand() % 255;
+        triangle(ax, ay, bx, by, cx, cy, framebuffer, color);
+    }
+
     framebuffer.write_tga_file("framebuffer.tga");
     return 0;
 }
-
