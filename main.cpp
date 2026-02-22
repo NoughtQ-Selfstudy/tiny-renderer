@@ -81,33 +81,69 @@ double signedTriangleArea(int ax, int ay, int bx, int by, int cx, int cy) {
     return .5 * ((bx - ax) * (cy - ay) - (cx - ax) * (by - ay));
 }
 
+vec3 barycentricCoords(
+    int ax, int ay, int bx, int by, int cx, int cy, int x, int y
+) {
+    double total_area = signedTriangleArea(ax, ay, bx, by, cx, cy);
+    double alpha = signedTriangleArea(x, y, bx, by, cx, cy) / total_area;
+    double beta = signedTriangleArea(x, y, cx, cy, ax, ay) / total_area;
+    double gamma = signedTriangleArea(x, y, ax, ay, bx, by) / total_area;
+    return {alpha, beta, gamma};
+}
+
 // Method 2: Triangle Rasterization, Modern Apporach
-void modernRasterizer(int ax, int ay, int bx, int by, int cx, int cy, 
-                       TGAImage &framebuffer, TGAColor color) {
+void modernRasterizer(    
+    int ax, int ay, // int az, 
+    int bx, int by, // int bz, 
+    int cx, int cy, // int cz, 
+    TGAImage &framebuffer  // , TGAColor color
+) {
     // bounding box
     int bblx = std::min({ax, bx, cx}), bbrx = std::max({ax, bx, cx});
     int bbby = std::min({ay, by, cy}), bbty = std::max({ay, by, cy});
 
+    TGAColor color[3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            color[i][j] = std::rand() % 255;
+        }
+    }
+
     for (int x = bblx; x <= bbrx; ++x) {
         for (int y = bbby; y <= bbty; ++y) {
             // if (x, y) is inside the triangle
-            if (isInside(ax, ay, bx, by, cx, cy, x, y)) {
-                framebuffer.set(x, y, color);
+            auto [alpha, beta, gamma] = barycentricCoords(ax, ay, bx, by, cx, cy, x, y);
+            // if (isInside(ax, ay, bx, by, cx, cy, x, y)) {
+            if (alpha >= 0 && beta >= 0 && gamma >= 0) {
+                // depth
+                // unsigned char z = alpha * az + beta * bz + gamma * cz;
+                if (std::min({alpha, beta, gamma}) < 0.1) {  // wireframe triangle!
+                    framebuffer.set(x, y, {
+                        static_cast<unsigned char>(alpha * color[0][0] + beta * color[1][0] + gamma * color[2][0]), 
+                        static_cast<unsigned char>(alpha * color[0][1] + beta * color[1][1] + gamma * color[2][1]),
+                        static_cast<unsigned char>(alpha * color[0][2] + beta * color[1][2] + gamma * color[2][2]),
+                    });
+                }
             }
         }
     }
 }
 
-void triangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &framebuffer, TGAColor color) {
+void triangle(
+    int ax, int ay, // int az, 
+    int bx, int by, // int bz, 
+    int cx, int cy, // int cz, 
+    TGAImage &framebuffer  // , TGAColor color
+) {
     // back-face culling
     if (signedTriangleArea(ax, ay, bx, by, cx, cy) < 1) return;
 
-    line(ax, ay, bx, by, framebuffer, color);
-    line(bx, by, cx, cy, framebuffer, color);
-    line(cx, cy, ax, ay, framebuffer, color);
+    // line(ax, ay, bx, by, framebuffer, color);
+    // line(bx, by, cx, cy, framebuffer, color);
+    // line(cx, cy, ax, ay, framebuffer, color);
     
     // scanlineRendering(ax, ay, bx, by, cx, cy, framebuffer, color);
-    modernRasterizer(ax, ay, bx, by, cx, cy, framebuffer, color);
+    modernRasterizer(ax, ay, bx, by, cx, cy, framebuffer);  //, color);
 }
 
 // int main(int argc, char** argv) {
@@ -139,11 +175,28 @@ int main(int argc, char** argv) {
         auto [ax, ay] = project(model.vert(i, 0));
         auto [bx, by] = project(model.vert(i, 1));
         auto [cx, cy] = project(model.vert(i, 2));
-        TGAColor color;
-        for (int j = 0; j < 3; ++j) color[j] = std::rand() % 255;
-        triangle(ax, ay, bx, by, cx, cy, framebuffer, color);
+        // TGAColor color;
+        // for (int j = 0; j < 3; ++j) color[j] = std::rand() % 255;
+        // triangle(ax, ay, bx, by, cx, cy, framebuffer, color);
+        triangle(ax, ay, bx, by, cx, cy, framebuffer);
     }
 
     framebuffer.write_tga_file("framebuffer.tga");
     return 0;
 }
+
+// int main(int argc, char** argv) {
+//     constexpr int width  = 64;
+//     constexpr int height = 64;
+//     // TGAImage framebuffer(width, height, TGAImage::GRAYSCALE);
+//     TGAImage framebuffer(width, height, TGAImage::RGB);
+
+//     int ax = 17, ay =  4, az =  13;
+//     int bx = 55, by = 39, bz = 128;
+//     int cx = 23, cy = 59, cz = 255;
+
+//     triangle(ax, ay, az, bx, by, bz, cx, cy, cz, framebuffer);
+
+//     framebuffer.write_tga_file("framebuffer.tga");
+//     return 0;
+// }
