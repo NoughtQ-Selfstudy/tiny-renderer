@@ -13,3 +13,4 @@ struct IShader {
 typedef vec4 Triangle[3]; // a triangle primitive is made of three ordered points
 void rasterize(const Triangle &clip, const IShader &shader, TGAImage &framebuffer);
 
+TGAColor phong(const Triangle t, const vec3 eye, const vec3 center);
