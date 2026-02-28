@@ -24,7 +24,13 @@ void init_zbuffer(const int width, const int height) {
     zbuffer = std::vector<double>(width*height, -1000.);
 }
 
-void rasterize(const Triangle &clip, const IShader &shader, TGAImage &framebuffer) {
+void rasterize(
+    const Triangle &clip, 
+    const std::vector<vec3> &normals,
+    const std::vector<vec2> &uvs,
+    const IShader &shader, 
+    TGAImage &framebuffer
+) {
     vec4 ndc[3]    = { clip[0]/clip[0].w, clip[1]/clip[1].w, clip[2]/clip[2].w };                // normalized device coordinates
     vec2 screen[3] = { (Viewport*ndc[0]).xy(), (Viewport*ndc[1]).xy(), (Viewport*ndc[2]).xy() }; // screen coordinates
 
@@ -40,7 +46,7 @@ void rasterize(const Triangle &clip, const IShader &shader, TGAImage &framebuffe
             if (bc.x<0 || bc.y<0 || bc.z<0) continue;                                                    // negative barycentric coordinate => the pixel is outside the triangle
             double z = bc * vec3{ ndc[0].z, ndc[1].z, ndc[2].z };  // linear interpolation of the depth
             if (z <= zbuffer[x+y*framebuffer.width()]) continue;   // discard fragments that are too deep w.r.t the z-buffer
-            auto [discard, color] = shader.fragment(bc);
+            auto [discard, color] = shader.fragment(bc, normals, uvs, x, y);
             if (discard) continue;                                 // fragment shader can discard current fragment
             zbuffer[x+y*framebuffer.width()] = z;                  // update the z-buffer
             framebuffer.set(x, y, color);                          // update the framebuffer
