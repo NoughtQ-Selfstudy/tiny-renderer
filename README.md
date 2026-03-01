@@ -26,7 +26,7 @@
     - 背景知识：线性变换（缩放、旋转、剪切...）、仿射变换（平移...）、齐次坐标；
     - **视口变换**：([-1, 1], [-1, 1], [-1, 1]) -> ([0, width), [0, height], [0, 255])；
     - **透视投影**：借助齐次坐标改写成矩阵-向量乘法形式；
-    - **模型-视图变换**：根据相机位置（$\uparrow{eye}$）、相机朝向（从 $\uparrow{eye}$ 看向 $\uparrow{center}$）、相机朝上向量（$\uparrow{up}$）实现局部空间到世界空间的基变换。
+    - **模型-视图变换**：根据相机位置（$\overrightarrow{\text{eye}}$）、相机朝向（从 $\overrightarrow{\text{eye}}$ 看向 $\overrightarrow{\text{center}}$）、相机朝上向量（$\overrightarrow{\text{up}}$）实现局部空间到世界空间的基变换。
 - [x] [着色](https://haqr.eu/tinyrenderer/shading/)：
     - **渲染管线**：原始数据 -> **顶点着色器**(vertex shader)（处理顶点）-> **图元组装**(primitive assembly)（连接顶点形成图元（三角形））-> **光栅化器**(rasterizer)（将图元转换为一组片元）-> **片元着色器**(fragment shader)（处理片元）-> **输出合并**(output merging)（组合（3D 空间中）所有图元的片元，形成显示在屏幕上的 2D 彩色像素）；
     - 重构之前写的代码，并新增着色器类（但没有增加额外功能）；
