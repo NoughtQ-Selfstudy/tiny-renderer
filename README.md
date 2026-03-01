@@ -1,101 +1,44 @@
-# Software rendering in 500 lines of bare C++
+# tinyrenderer 代码实现
 
-The code itself is of little interest. Check the course notes:
-1. [Introduction](https://haqr.eu/tinyrenderer/)
-2. [Bresenham’s line drawing algorithm](https://haqr.eu/tinyrenderer/bresenham/)
-3. [Triangle rasterization](https://haqr.eu/tinyrenderer/rasterization/)
-4. [Primer on barycentric coordinates](https://haqr.eu/tinyrenderer/barycentric/)
-5. [Hidden faces removal](https://haqr.eu/tinyrenderer/z-buffer/)
-6. [A crude (but simple) approach to camera handling](https://haqr.eu/tinyrenderer/camera-naive/)
-7. [Better camera handling](https://haqr.eu/tinyrenderer/camera/)
-8. [Shading](https://haqr.eu/tinyrenderer/shading/)
-9. [More data!](https://haqr.eu/tinyrenderer/textures/)
-10. [Tangent space normal mapping](https://haqr.eu/tinyrenderer/tangent/)
-11. [Shadow mapping](https://haqr.eu/tinyrenderer/shadow/)
-12. [Indirect lighting](https://haqr.eu/tinyrenderer/ssao/)
-13. [Bonus: toon shading](https://haqr.eu/tinyrenderer/toon/)
-14. [Afterword](https://haqr.eu/tinyrenderer/afterword/)
+目标：使用 **C++**，在不借助任何第三方库的情况下实现一个**小型渲染器**（代码量为 500 行左右）。
 
-In this series of articles, I aim to demonstrate how OpenGL, Vulkan, Metal, and DirectX work by writing a simplified clone from scratch.
-Surprisingly, many people struggle with the initial hurdle of learning a 3D graphics API.
-To help with this, I have prepared a short series of lectures, after which my students are able to produce quite capable renderers.
-
-The task is as follows: using no third-party libraries (especially graphics-related ones), we will generate an image like this:
-
-![](https://haqr.eu/tinyrenderer/home/africanhead.png)
-
-_Warning: This is a training material that loosely follows the structure of modern 3D graphics libraries.
-It is a **software renderer**.
-**I do not intend to show how to write GPU applications — I want to show how they work.**
-I firmly believe that understanding this is essential for writing efficient applications using 3D libraries._
-
-## The starting point
-
-The final code consists of about 500 lines.
-My students typically require 10 to 20 hours of programming to start producing such renderers.
-The input is a 3D model composed of a triangulated mesh and textures.
-The output is a rendereding.
-There is no graphical interface, the program simply generates an image.
-
-To minimize external dependencies, I provide my students with a single class for handling [TGA](http://en.wikipedia.org/wiki/Truevision_TGA) files —
-one of the simplest formats supporting RGB, RGBA, and grayscale images.
-This serves as our foundation for image manipulation.
-At the beginning, the only available functionality (besides loading and saving images) is the ability to set the color of a single pixel.
-
-There are no built-in functions for drawing line segments or triangles — we will implement all of this manually.
-While I provide my own source code, written alongside my students, I do not recommend using it directly, as doing the work yourself is essential to understanding the concepts.
-The complete code is available on [github](https://github.com/ssloy/tinyrenderer), and you can find the initial source code I provide to my students [here](https://github.com/ssloy/tinyrenderer/tree/706b2dfecff65daeb93de568ee2c2bd87f277860).
-Behold, here is the starting point:
-
-```cpp
-#include "tgaimage.h"
-
-constexpr TGAColor white   = {255, 255, 255, 255}; // attention, BGRA order
-constexpr TGAColor green   = {  0, 255,   0, 255};
-constexpr TGAColor red     = {  0,   0, 255, 255};
-constexpr TGAColor blue    = {255, 128,  64, 255};
-constexpr TGAColor yellow  = {  0, 200, 255, 255};
-
-int main(int argc, char** argv) {
-    constexpr int width  = 64; 
-    constexpr int height = 64; 
-    TGAImage framebuffer(width, height, TGAImage::RGB);
-
-    int ax =  7, ay =  3;  
-    int bx = 12, by = 37; 
-    int cx = 62, cy = 53; 
-
-    framebuffer.set(ax, ay, white);
-    framebuffer.set(bx, by, white);
-    framebuffer.set(cx, cy, white);
-
-    framebuffer.write_tga_file("framebuffer.tga");
-    return 0;
-}
-```
-
-It produces the 64x64 image `framebuffer.tga`, here I scaled it for better readability:
-
-![](https://haqr.eu/tinyrenderer/bresenham/bresenham0.png)
+- 已提供 TGA 格式图片的处理 API，方便对图像进行操纵；
+- 提供了一些用于展示渲染结果的 Wavefront obj 格式的模型文件和 TGA 格式的贴图文件（法线贴图、切空间法线贴图、漫反射颜色贴图和高光贴图）。
 
 
-## Teaser: few examples made with the renderer
+## 进度
 
-![](https://haqr.eu/tinyrenderer/home/demon.png)
+>注：链接指向对应的教程，代码见仓库各分支。
 
-![](https://haqr.eu/tinyrenderer/home/diablo-glow.png)
-
-![](https://haqr.eu/tinyrenderer/home/boggie.png)
-
-![](https://haqr.eu/tinyrenderer/home/diablo-ssao.png)
-
-## Compilation
-
-```sh
-git clone https://github.com/ssloy/tinyrenderer.git &&
-cd tinyrenderer &&
-cmake -Bbuild &&
-cmake --build build -j &&
-build/tinyrenderer obj/diablo3_pose/diablo3_pose.obj obj/floor.obj
-```
-The rendered image is saved to `framebuffer.tga`.
+- [x] [**Bresenham 线条绘制算法**](https://haqr.eu/tinyrenderer/bresenham/)：仅通过整数运算在像素网格上高效绘制直线的经典算法。
+- [x] [三角形光栅化](https://haqr.eu/tinyrenderer/rasterization/)：遍历三角形所在包围盒内（只记录对角的两个点）的每个像素点，若像素点在三角形内（通过**重心坐标**判断）则为该像素上色。最后剔除符号面积过小甚至为负的三角形（它们不应该被看到）。
+- [x] [重心坐标入门](https://haqr.eu/tinyrenderer/barycentric/)：利用三角形的符号面积（通过鞋带公式计算）计算三角形内一点的重心坐标，并根据重心坐标对**深度**、颜色等进行**插值**。
+- [x] [隐藏表面去除](https://haqr.eu/tinyrenderer/z-buffer/)：
+    - 先采用一般的画家算法，不仅计算开销大（场景一变就要对所有三角形重新排序），还有不少瑕疵（比如三个相互重叠的三角形无法确定绘制顺序）；
+    - 改进做法是采用**逐像素的画家算法**：准备一个**深度缓冲区**(z-buffer)（通过前面提到的根据重心坐标进行深度插值），若当前像素在已绘制像素的外侧（深度缓冲区存的深度值更小），那就得更新深度缓冲区并设置最新的颜色；
+    - 自行准备有关向量和矩阵计算的模板类，后面会频繁用到。
+- [x] [处理相机的粗糙（但简单的）方法](https://haqr.eu/tinyrenderer/camera-naive/)：
+    - 对每个顶点应用旋转矩阵，以达到旋转相机的效果（暂时无视深度 -> **正射投影**）；
+    - 再应用**透视投影**（考虑深度），以达到“近大远小”的更真实的效果；
+    - 由于旋转模型后可能会导致部分顶点深度超过范围，所以将 z-buffer 改为用浮点数组存储。
+- [x] [更好的相机处理](https://haqr.eu/tinyrenderer/camera/)：
+    - 变换链：对象坐标（.obj 文件里的坐标）-> 世界坐标（模型-视图变换）-> 相机坐标 -> 裁剪坐标（透视投影）-> 屏幕坐标（视口变换）；
+    - 背景知识：线性变换（缩放、旋转、剪切...）、仿射变换（平移...）、齐次坐标；
+    - **视口变换**：([-1, 1], [-1, 1], [-1, 1]) -> ([0, width), [0, height], [0, 255])；
+    - **透视投影**：借助齐次坐标改写成矩阵-向量乘法形式；
+    - **模型-视图变换**：根据相机位置（$\uparrow{eye}$）、相机朝向（从 $\uparrow{eye}$ 看向 $\uparrow{center}$）、相机朝上向量（$\uparrow{up}$）实现局部空间到世界空间的基变换。
+- [x] [着色](https://haqr.eu/tinyrenderer/shading/)：
+    - **渲染管线**：原始数据 -> **顶点着色器**(vertex shader)（处理顶点）-> **图元组装**(primitive assembly)（连接顶点形成图元（三角形））-> **光栅化器**(rasterizer)（将图元转换为一组片元）-> **片元着色器**(fragment shader)（处理片元）-> **输出合并**(output merging)（组合（3D 空间中）所有图元的片元，形成显示在屏幕上的 2D 彩色像素）；
+    - 重构之前写的代码，并新增着色器类（但没有增加额外功能）；
+    - **Phong 反射模型**：环境光(ambient)（常量）+ 漫反射(diffuse)（取决于入射光线与三角形表面的夹角）+ 镜面反射(specular)（取决于反射光线与相机朝向的夹角和预设的指数项）。
+- [x] [更多数据（平滑着色 + 法线映射 + 纹理映射）](https://haqr.eu/tinyrenderer/textures/)：
+    - 平滑着色：优化法线计算，从原来仅根据三角形两边叉积求得，到根据重心坐标和已知的顶点法向量信息计算更加精确的法向量；
+    - **法线映射**：根据重心坐标（用于计算纹理坐标 uv）和已有的法线贴图（`_nm.tga` 文件）采样得到任意一点的法向量；
+    - **纹理映射**：类似法线映射，但读取漫反射颜色（`_diffuse.tga` 文件（教程写错了））+ 高光纹理（`_spec.tga` 文件），为模型上色。需略微调整 Phong 反射模型的计算。
+- [x] [**切空间法线映射**](https://haqr.eu/tinyrenderer/tangent/)：
+    - 法线映射的问题：若艺术家复用 uv 坐标，则会导致同一像素对应不同法线，但一个颜色不能对应多个方向；
+    - 切空间法线映射：对每个片元计算其所在三角形的**切空间**（基向量分别为切线、双切线和（插值计算得到的）法线），将在切空间法线贴图中采样得到的法线乘上由这三个向量构成的矩阵后得到准确的法线值；
+    - 切空间法线贴图整体呈蓝紫色的原因：切空间的法线坐标总是为 (0, 0, 1)，对应 RGB 中的蓝色，颜色的些许变化来自局部基的移动而非纹素颜色本身。
+- [ ] [阴影映射](https://haqr.eu/tinyrenderer/shadow/)
+- [ ] [间接光照](https://haqr.eu/tinyrenderer/ssao/)
+- [ ] [卡通阴影](https://haqr.eu/tinyrenderer/toon/)
