@@ -11,6 +11,19 @@
 >注：链接指向对应的教程，代码见仓库各分支。
 
 - [x] [**Bresenham 线条绘制算法**](https://haqr.eu/tinyrenderer/bresenham/)：仅通过整数运算在像素网格上高效绘制直线的经典算法。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/bresenham/african_head_line.png" width=50%/>
+    <img src="images/bresenham/boggie_line.png" width=50%/>
+    <img src="images/bresenham/diablo3_pose_line.png" width=50%/>
+    </div>
+
+    </details>
+
 - [x] [三角形光栅化](https://haqr.eu/tinyrenderer/rasterization/)：遍历三角形所在包围盒内（只记录对角的两个点）的每个像素点，若像素点在三角形内（通过**重心坐标**判断）则为该像素上色。最后剔除符号面积过小甚至为负的三角形（它们不应该被看到）。
 - [x] [重心坐标入门](https://haqr.eu/tinyrenderer/barycentric/)：利用三角形的符号面积（通过鞋带公式计算）计算三角形内一点的重心坐标，并根据重心坐标对**深度**、颜色等进行**插值**。
 - [x] [隐藏表面去除](https://haqr.eu/tinyrenderer/z-buffer/)：
