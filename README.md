@@ -25,6 +25,19 @@
     </details>
 
 - [x] [三角形光栅化](https://haqr.eu/tinyrenderer/rasterization/)：遍历三角形所在包围盒内（只记录对角的两个点）的每个像素点，若像素点在三角形内（通过**重心坐标**判断）则为该像素上色。最后剔除符号面积过小甚至为负的三角形（它们不应该被看到）。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/rasterization/african_head_rasterization.png" width=50%/>
+    <img src="images/rasterization/boggie_rasterization.png" width=50%/>
+    <img src="images/rasterization/diablo3_pose_rasterization.png" width=50%/>
+    </div>
+
+    </details>
+
 - [x] [重心坐标入门](https://haqr.eu/tinyrenderer/barycentric/)：利用三角形的符号面积（通过鞋带公式计算）计算三角形内一点的重心坐标，并根据重心坐标对**深度**、颜色等进行**插值**。
 - [x] [隐藏表面去除](https://haqr.eu/tinyrenderer/z-buffer/)：
     - 先采用一般的画家算法，不仅计算开销大（场景一变就要对所有三角形重新排序），还有不少瑕疵（比如三个相互重叠的三角形无法确定绘制顺序）；
