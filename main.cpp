@@ -81,23 +81,26 @@ std::tuple<int,int,int> project(vec3 v) { // First of all, (x,y) is an orthogona
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " obj/model.obj" << std::endl;
         return 1;
     }
 
-    Model model(argv[1]);
+    
     TGAImage framebuffer(width, height, TGAImage::RGB);
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
-    for (int i=0; i<model.nfaces(); i++) { // iterate through all triangles
-        auto [ax, ay, az] = project(model.vert(i, 0));
-        auto [bx, by, bz] = project(model.vert(i, 1));
-        auto [cx, cy, cz] = project(model.vert(i, 2));
-        TGAColor rnd;
-        for (int c=0; c<3; c++) rnd[c] = std::rand()%255;
-        // triangle(ax, ay, bx, by, cx, cy, framebuffer, rnd);
-        triangle(ax, ay, az, bx, by, bz, cx, cy, cz, zbuffer, framebuffer, rnd);
+    for (int m = 1; m < argc; ++m) {
+        Model model(argv[m]);
+        for (int i=0; i<model.nfaces(); i++) { // iterate through all triangles
+            auto [ax, ay, az] = project(model.vert(i, 0));
+            auto [bx, by, bz] = project(model.vert(i, 1));
+            auto [cx, cy, cz] = project(model.vert(i, 2));
+            TGAColor rnd;
+            for (int c=0; c<3; c++) rnd[c] = std::rand()%255;
+            // triangle(ax, ay, bx, by, cx, cy, framebuffer, rnd);
+            triangle(ax, ay, az, bx, by, bz, cx, cy, cz, zbuffer, framebuffer, rnd);
+        }
     }
 
     framebuffer.write_tga_file("framebuffer.tga");
