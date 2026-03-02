@@ -56,6 +56,22 @@
     - 先采用一般的画家算法，不仅计算开销大（场景一变就要对所有三角形重新排序），还有不少瑕疵（比如三个相互重叠的三角形无法确定绘制顺序）；
     - 改进做法是采用**逐像素的画家算法**：准备一个**深度缓冲区**(z-buffer)（通过前面提到的根据重心坐标进行深度插值），若当前像素在已绘制像素的外侧（深度缓冲区存的深度值更小），那就得更新深度缓冲区并设置最新的颜色；
     - 自行准备有关向量和矩阵计算的模板类，后面会频繁用到。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/hidden/african_head_zbuffer_PPPA.png" width=48%/>
+    <img src="images/hidden/african_head_PPPA.png" width=48%/>
+    <img src="images/hidden/boggie_zbuffer_PPPA.png" width=48%/>
+    <img src="images/hidden/boggie_PPPA.png" width=48%/>
+    <img src="images/hidden/diablo3_pose_zbuffer_PPPA.png" width=48%/>
+    <img src="images/hidden/diablo3_pose_PPPA.png" width=48%/>
+    </div>
+
+    </details>
+
 - [x] [处理相机的粗糙（但简单的）方法](https://haqr.eu/tinyrenderer/camera-naive/)：
     - 对每个顶点应用旋转矩阵，以达到旋转相机的效果（暂时无视深度 -> **正射投影**）；
     - 再应用**透视投影**（考虑深度），以达到“近大远小”的更真实的效果；
