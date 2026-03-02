@@ -2,8 +2,13 @@
 #include "our_gl.h"
 #include "model.h"
 
-extern mat<4,4> ModelView, Perspective; // "OpenGL" state matrices and
+extern mat<4,4> ModelView, Perspective, Viewport; // "OpenGL" state matrices and
 extern std::vector<double> zbuffer;     // the depth buffer
+extern std::vector<double> shadowmap;
+extern mat<4,4> VPM_light, VPM_camera;
+
+constexpr int shadow_w = 8000;   // shadowmap size
+constexpr int shadow_h = 8000;
 
 struct RandomShader : IShader {
     const Model &model;
@@ -41,7 +46,8 @@ struct RandomShader : IShader {
         const std::vector<vec3> nms,
         const std::vector<vec2> uvs,
         const int x,
-        const int y
+        const int y,
+        const double z
     ) const {
         TGAColor color;
         
@@ -104,8 +110,22 @@ struct RandomShader : IShader {
             return {false, color};
         }
 
-        for (int i = 0; i < 3; ++i) {
-            color[i] = std::min(255., df_color[i] * (ka + kd + .8 * ks));
+        vec4 f = { static_cast<double>(x), static_cast<double>(y), z, 1. };
+        vec4 raw = VPM_light * VPM_camera.invert() * f;
+        vec3 p = (raw / raw.w).xyz();
+        double bias = .03;  // handle z-fighting problem
+        if (
+            static_cast<int>(p.x) >= 0 && static_cast<int>(p.x) < shadow_w &&
+            static_cast<int>(p.y) >= 0 && static_cast<int>(p.y) < shadow_h &&
+            shadowmap[static_cast<int>(p.x) + static_cast<int>(p.y) * shadow_w] > p.z + bias
+        ) {    // shadow mapping
+            for (int i = 0; i < 3; ++i) {
+                color[i] = df_color[i] * ka;
+            }
+        } else {
+            for (int i = 0; i < 3; ++i) {
+                color[i] = std::min(255., df_color[i] * (ka + kd + .8 * ks));
+            }
         }
 
         return {false, color};
@@ -133,13 +153,34 @@ int main(int argc, char** argv) {
     constexpr vec3 center{ 0, 0, 0}; // camera direction
     constexpr vec3     up{ 0, 1, 0}; // camera up vector
 
+    // light -> generate shadow map
+    lookat(light, center, up);                                           // build the ModelView   matrix
+    init_perspective(norm(light-center));                                // build the Perspective matrix
+    init_viewport(shadow_w/16, shadow_h/16, shadow_w*7/8, shadow_h*7/8); // build the Viewport    matrix
+    VPM_light = Viewport * Perspective * ModelView;
+    init_shadowmap(shadow_w, shadow_h);
+    TGAImage framebuffer(width, height, TGAImage::RGB, { 178, 195, 208, 128 });
+
+    for (int m=1; m<argc; m++) {                    // iterate through all input objects
+        Model model(argv[m]);                       // load the data
+        RandomShader shader(light, model);
+        for (int f=0; f<model.nfaces(); f++) {      // iterate through all facets
+            Triangle clip = { 
+                shader.vertex(f, 0),  // assemble the primitive
+                shader.vertex(f, 1),
+                shader.vertex(f, 2) 
+            };
+            generate_shadow_map(shadow_w, shadow_h, clip, shader);
+        }
+    }
+
+    // camera
     lookat(eye, center, up);                                   // build the ModelView   matrix
     init_perspective(norm(eye-center));                        // build the Perspective matrix
     init_viewport(width/16, height/16, width*7/8, height*7/8); // build the Viewport    matrix
+    VPM_camera = Viewport * Perspective * ModelView;
     init_zbuffer(width, height);
-    // TGAImage framebuffer(width, height, TGAImage::RGB, {177, 195, 209, 255});
-    TGAImage framebuffer(width, height, TGAImage::RGB, {0, 0, 0, 0});
-    
+    // TGAImage framebuffer(width, height, TGAImage::RGB, {0, 0, 0, 0});
 
     for (int m=1; m<argc; m++) {                    // iterate through all input objects
         Model model(argv[m]);                       // load the data
@@ -152,12 +193,6 @@ int main(int argc, char** argv) {
         shader.df_texture_map.read_tga_file(texture_name_converter(argv[m], df_suffix));
         shader.sp_texture_map.read_tga_file(texture_name_converter(argv[m], sp_suffix));
         for (int f=0; f<model.nfaces(); f++) {      // iterate through all facets
-            // shader.color = { 
-            //     static_cast<unsigned char>(std::rand()%255), 
-            //     static_cast<unsigned char>(std::rand()%255), 
-            //     static_cast<unsigned char>(std::rand()%255), 
-            //     255 
-            // };
             Triangle clip = { shader.vertex(f, 0),  // assemble the primitive
                               shader.vertex(f, 1),
                               shader.vertex(f, 2) };
