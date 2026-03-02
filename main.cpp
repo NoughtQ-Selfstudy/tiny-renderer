@@ -137,23 +137,8 @@ void triangle(
 ) {
     // back-face culling
     if (signedTriangleArea(ax, ay, bx, by, cx, cy) < 1) return;
-
-    // line(ax, ay, bx, by, framebuffer, color);
-    // line(bx, by, cx, cy, framebuffer, color);
-    // line(cx, cy, ax, ay, framebuffer, color);
-    
-    // scanlineRendering(ax, ay, bx, by, cx, cy, framebuffer, color);
-    modernRasterizer(ax, ay, bx, by, cx, cy, framebuffer);  //, color);
+    modernRasterizer(ax, ay, bx, by, cx, cy, framebuffer);
 }
-
-// int main(int argc, char** argv) {
-//     TGAImage framebuffer(width, height, TGAImage::RGB);
-//     triangle(  7, 45, 35, 100, 45,  60, framebuffer, red);
-//     triangle(120, 35, 90,   5, 45, 110, framebuffer, white);
-//     triangle(115, 83, 80,  90, 85, 120, framebuffer, green);
-//     framebuffer.write_tga_file("framebuffer.tga");
-//     return 0;
-// }
 
 std::tuple<int, int> project(vec3 v) {
     int x = (v.x + 1.) / 2 * width;
@@ -162,41 +147,25 @@ std::tuple<int, int> project(vec3 v) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " obj/model.obj" << std::endl;
         return 1;
     }
 
     std::srand(std::time(NULL));
-    Model model(argv[1]);
+    
     TGAImage framebuffer(width, height, TGAImage::RGB);
 
-    for (int i = 0; i < model.nfaces(); ++i) {
-        auto [ax, ay] = project(model.vert(i, 0));
-        auto [bx, by] = project(model.vert(i, 1));
-        auto [cx, cy] = project(model.vert(i, 2));
-        // TGAColor color;
-        // for (int j = 0; j < 3; ++j) color[j] = std::rand() % 255;
-        // triangle(ax, ay, bx, by, cx, cy, framebuffer, color);
-        triangle(ax, ay, bx, by, cx, cy, framebuffer);
+    for (int m = 1; m < argc; ++m) {
+        Model model(argv[m]);
+        for (int i = 0; i < model.nfaces(); ++i) {
+            auto [ax, ay] = project(model.vert(i, 0));
+            auto [bx, by] = project(model.vert(i, 1));
+            auto [cx, cy] = project(model.vert(i, 2));
+            triangle(ax, ay, bx, by, cx, cy, framebuffer);
+        }
     }
 
     framebuffer.write_tga_file("framebuffer.tga");
     return 0;
 }
-
-// int main(int argc, char** argv) {
-//     constexpr int width  = 64;
-//     constexpr int height = 64;
-//     // TGAImage framebuffer(width, height, TGAImage::GRAYSCALE);
-//     TGAImage framebuffer(width, height, TGAImage::RGB);
-
-//     int ax = 17, ay =  4, az =  13;
-//     int bx = 55, by = 39, bz = 128;
-//     int cx = 23, cy = 59, cz = 255;
-
-//     triangle(ax, ay, az, bx, by, bz, cx, cy, cz, framebuffer);
-
-//     framebuffer.write_tga_file("framebuffer.tga");
-//     return 0;
-// }
