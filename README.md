@@ -39,6 +39,19 @@
     </details>
 
 - [x] [重心坐标入门](https://haqr.eu/tinyrenderer/barycentric/)：利用三角形的符号面积（通过鞋带公式计算）计算三角形内一点的重心坐标，并根据重心坐标对**深度**、颜色等进行**插值**。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/barycentric/african_head_wireframe.png" width=50%/>
+    <img src="images/barycentric/boggie_wireframe.png" width=50%/>
+    <img src="images/barycentric/diablo3_pose_wireframe.png" width=50%/>
+    </div>
+
+    </details>
+
 - [x] [隐藏表面去除](https://haqr.eu/tinyrenderer/z-buffer/)：
     - 先采用一般的画家算法，不仅计算开销大（场景一变就要对所有三角形重新排序），还有不少瑕疵（比如三个相互重叠的三角形无法确定绘制顺序）；
     - 改进做法是采用**逐像素的画家算法**：准备一个**深度缓冲区**(z-buffer)（通过前面提到的根据重心坐标进行深度插值），若当前像素在已绘制像素的外侧（深度缓冲区存的深度值更小），那就得更新深度缓冲区并设置最新的颜色；
