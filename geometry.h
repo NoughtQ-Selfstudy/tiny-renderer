@@ -67,11 +67,11 @@ template <int R, int C, typename T = double>
 struct mat {
     std::array<T, R * C> data{};
 
-    T& operator[] (int r, int c) {
+    T& operator()(int r, int c) {
         return data[r * C + c];
     }
 
-    const T& operator[] (int r, int c) const {
+    const T& operator()(int r, int c) const {
         return data[r * C + c];
     }
 
