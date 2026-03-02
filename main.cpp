@@ -57,12 +57,12 @@ std::tuple<int, int> project(vec3 v) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " obj/model.obj" << std::endl;
         return 1;
     }
 
-    Model model(argv[1]);
+    
     TGAImage framebuffer(width, height, TGAImage::RGB);
 
     // int ax =  7, ay =  3;
@@ -78,20 +78,22 @@ int main(int argc, char** argv) {
     // framebuffer.set(bx, by, white);
     // framebuffer.set(cx, cy, white);
 
-    for (int i = 0; i < model.n_faces(); ++i) {
-        auto [ax, ay] = project(model.vertex(i, 0));
-        auto [bx, by] = project(model.vertex(i, 1));
-        auto [cx, cy] = project(model.vertex(i, 2));
-        line(ax, ay, bx, by, framebuffer, red);
-        line(bx, by, cx, cy, framebuffer, red);
-        line(cx, cy, ax, ay, framebuffer, red);
-    }
+    for (int m = 1; m < argc; ++m) {
+        Model model(argv[m]);
+        for (int i = 0; i < model.n_faces(); ++i) {
+            auto [ax, ay] = project(model.vertex(i, 0));
+            auto [bx, by] = project(model.vertex(i, 1));
+            auto [cx, cy] = project(model.vertex(i, 2));
+            line(ax, ay, bx, by, framebuffer, red);
+            line(bx, by, cx, cy, framebuffer, red);
+            line(cx, cy, ax, ay, framebuffer, red);
+        }
 
-    for (int i = 0; i < model.n_verices(); ++i) {
-        auto [x, y] = project(model.vertex(i));
-        framebuffer.set(x, y, white);
+        for (int i = 0; i < model.n_verices(); ++i) {
+            auto [x, y] = project(model.vertex(i));
+            framebuffer.set(x, y, white);
+        }
     }
-
 
     framebuffer.write_tga_file("framebuffer.tga");
     return 0;
