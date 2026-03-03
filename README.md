@@ -105,6 +105,19 @@
     - **渲染管线**：原始数据 -> **顶点着色器**(vertex shader)（处理顶点）-> **图元组装**(primitive assembly)（连接顶点形成图元（三角形））-> **光栅化器**(rasterizer)（将图元转换为一组片元）-> **片元着色器**(fragment shader)（处理片元）-> **输出合并**(output merging)（组合（3D 空间中）所有图元的片元，形成显示在屏幕上的 2D 彩色像素）；
     - 重构之前写的代码，并新增着色器类（但没有增加额外功能）；
     - **Phong 反射模型**：环境光(ambient)（常量）+ 漫反射(diffuse)（取决于入射光线与三角形表面的夹角）+ 镜面反射(specular)（取决于反射光线与相机朝向的夹角和预设的指数项）。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/shading/african_head_shading.png" width=50%/>
+    <img src="images/shading/boggie_shading.png" width=50%/>
+    <img src="images/shading/diablo3_pose_shading.png" width=50%/>
+    </div>
+
+    </details>
+
 - [x] [更多数据（平滑着色 + 法线映射 + 纹理映射）](https://haqr.eu/tinyrenderer/textures/)：
     - 平滑着色：优化法线计算，从原来仅根据三角形两边叉积求得，到根据重心坐标和已知的顶点法向量信息计算更加精确的法向量；
     - **法线映射**：根据重心坐标（用于计算纹理坐标 uv）和已有的法线贴图（`_nm.tga` 文件）采样得到任意一点的法向量；
