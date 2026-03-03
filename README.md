@@ -128,10 +128,18 @@
     <summary>点击展开/折叠</summary>
 
     <div align=center>
+    <img src="images/textures/african_head_smooth_shading.png" width=48%/>
+    <img src="images/textures/african_head_normal_mapping.png" width=48%/>
     <img src="images/textures/african_head_textures.png" width=50%/>
 
-    boggie 模型缺少法线贴图文件（`_nm.tga`）
+    <img src="images/textures/boggie_smooth_shading.png" width=50%/>
+    </div>
 
+    >boggie 模型缺少法线贴图文件（`_nm.tga`），因此没有对应的法线映射和纹理映射后的渲染结果。
+
+    <div align=center>
+    <img src="images/textures/diablo3_pose_smooth_shading.png" width=48%/>
+    <img src="images/textures/diablo3_pose_normal_mapping.png" width=48%/>
     <img src="images/textures/diablo3_pose_textures.png" width=50%/>
     </div>
 
