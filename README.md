@@ -109,6 +109,21 @@
     - 平滑着色：优化法线计算，从原来仅根据三角形两边叉积求得，到根据重心坐标和已知的顶点法向量信息计算更加精确的法向量；
     - **法线映射**：根据重心坐标（用于计算纹理坐标 uv）和已有的法线贴图（`_nm.tga` 文件）采样得到任意一点的法向量；
     - **纹理映射**：类似法线映射，但读取漫反射颜色（`_diffuse.tga` 文件（教程写错了））+ 高光纹理（`_spec.tga` 文件），为模型上色。需略微调整 Phong 反射模型的计算。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/textures/african_head_textures.png" width=50%/>
+
+    boggie 模型缺少法线贴图文件（`_nm.tga`）
+
+    <img src="images/textures/diablo3_pose_textures.png" width=50%/>
+    </div>
+
+    </details>
+
 - [x] [**切空间法线映射**](https://haqr.eu/tinyrenderer/tangent/)：
     - 法线映射的问题：若艺术家复用 uv 坐标，则会导致同一像素对应不同法线，但一个颜色不能对应多个方向；
     - 切空间法线映射：对每个片元计算其所在三角形的**切空间**（基向量分别为切线、双切线和（插值计算得到的）法线），将在切空间法线贴图中采样得到的法线乘上由这三个向量构成的矩阵后得到准确的法线值；
