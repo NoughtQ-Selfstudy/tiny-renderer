@@ -4,8 +4,7 @@
 void lookat(const vec3 eye, const vec3 center, const vec3 up);
 void init_perspective(const double f);
 void init_viewport(const int x, const int y, const int w, const int h);
-void init_zbuffer(const int width, const int height);
-void init_shadowmap(const int width, const int height);
+void init_buffer(std::vector<double>& buffer, const int width, const int height);
 
 struct IShader {
     virtual std::pair<bool,TGAColor> fragment(
@@ -26,11 +25,12 @@ void rasterize(
     const IShader &shader, 
     TGAImage &framebuffer
 );
-void generate_shadow_map(
+void generate_depth_map(
     const int w,
     const int h,
     const Triangle &clip, 
-    const IShader &shader
+    const IShader &shader,
+    std::vector<double> &depth_map
 );
 
 TGAColor phong(const Triangle t, const vec3 eye, const vec3 center);

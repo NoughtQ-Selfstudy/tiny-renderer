@@ -3,8 +3,10 @@
 
 mat<4,4> ModelView, Viewport, Perspective; // "OpenGL" state matrices
 mat<4,4> VPM_light, VPM_camera;
-std::vector<double> shadowmap;
 std::vector<double> zbuffer;               // depth buffer
+std::vector<double> shadowmap;
+std::vector<std::vector<double>> AO_maps;
+std::vector<mat<4, 4>> VPM_AOs;
 
 void lookat(const vec3 eye, const vec3 center, const vec3 up) {
     vec3 n = normalized(eye-center);
@@ -22,12 +24,8 @@ void init_viewport(const int x, const int y, const int w, const int h) {
     Viewport = {{{w/2., 0, 0, x+w/2.}, {0, h/2., 0, y+h/2.}, {0,0,1,0}, {0,0,0,1}}};
 }
 
-void init_zbuffer(const int width, const int height) {
-    zbuffer = std::vector<double>(width*height, -1000.);
-}
-
-void init_shadowmap(const int width, const int height) {
-    shadowmap = std::vector<double>(width*height, -1000.);
+void init_buffer(std::vector<double>& buffer, const int width, const int height) {
+    buffer = std::vector<double>(width*height, -1000.);
 }
 
 void rasterize(
@@ -60,11 +58,12 @@ void rasterize(
     }
 }
 
-void generate_shadow_map(
+void generate_depth_map(
     const int w,
     const int h,
     const Triangle &clip,
-    const IShader &shader
+    const IShader &shader,
+    std::vector<double> &depth_map
 ) {
     vec4 ndc[3]    = { clip[0]/clip[0].w, clip[1]/clip[1].w, clip[2]/clip[2].w };                // normalized device coordinates
     vec2 screen[3] = { (Viewport*ndc[0]).xy(), (Viewport*ndc[1]).xy(), (Viewport*ndc[2]).xy() }; // screen coordinates
@@ -80,10 +79,10 @@ void generate_shadow_map(
             vec3 bc = ABC.invert_transpose() * vec3{static_cast<double>(x), static_cast<double>(y), 1.}; // barycentric coordinates of {x,y} w.r.t the triangle
             if (bc.x<0 || bc.y<0 || bc.z<0) continue;                                                    // negative barycentric coordinate => the pixel is outside the triangle
             double z = bc * vec3{ ndc[0].z, ndc[1].z, ndc[2].z };  // linear interpolation of the depth
-            if (z <= shadowmap[x+y*w]) continue;   // discard fragments that are too deep w.r.t the z-buffer
+            if (z <= depth_map[x+y*w]) continue;   // discard fragments that are too deep w.r.t the z-buffer
             // auto [discard, color] = shader.fragment(bc, normals, uvs, x, y);
             // if (discard) continue;                                 // fragment shader can discard current fragment
-            shadowmap[x+y*w] = z;                  // update the z-buffer
+            depth_map[x+y*w] = z;                  // update the z-buffer
             // framebuffer.set(x, y, color);                          // update the framebuffer
         }
     }
