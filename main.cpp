@@ -30,7 +30,7 @@ struct RandomShader : IShader {
         double ka = .3;
 
         // diffuse
-        vec3 n = normalized(cross(tri[2] - tri[0], tri[1] - tri[0]));
+        vec3 n = normalized(cross(tri[1] - tri[0], tri[2] - tri[0]));
         double kd = std::max(0., n * l);
 
         // specular
