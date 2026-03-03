@@ -103,7 +103,7 @@ void viewport(const int x, const int y, const int w, const int h) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " obj/model.obj" << std::endl;
         return 1;
     }
