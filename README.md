@@ -186,6 +186,35 @@
     - 解决方案有**全局光照**和**环境遮蔽**（AO），由于前者计算量大，因此在我们的渲染器中采用后者
     - AO 的暴力算法是假设光线从围绕物体的半球面的各个方向均匀打在物体表面上，不仅计算量大（需要保存多个 buffer），模拟效果也不怎么样
     - 一种效率更高的变体是 **SSAO**（屏幕空间环境遮蔽）：在后处理阶段中，在每个片元周围随机采样若干个点（具体怎么采样见仁见智，我的实现是沿 xy 平面某一半径范围内的圆采样，效果不如教程展示的那样）。若采样点深度更小，说明该片元被遮挡。统计能遮挡的采样点和总采样点数之间的比例，作为遮蔽系数。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    AO（光源数 = 20）：
+
+    <div align=center>
+    <img src="images/ambient_occlusion/african_head_ambient_AO.png" width=48%/>
+    <img src="images/ambient_occlusion/african_head_AO.png" width=48%/>
+    <img src="images/ambient_occlusion/boggie_ambient_AO.png" width=48%/>
+    <img src="images/ambient_occlusion/boggie_AO.png" width=48%/>
+    <img src="images/ambient_occlusion/diablo3_pose_ambient_AO.png" width=48%/>
+    <img src="images/ambient_occlusion/diablo3_pose_AO.png" width=48%/>
+    </div>
+
+    SSAO（随机采样 128 个点）：
+
+    <div align=center>
+    <img src="images/ambient_occlusion/african_head_ambient_SSAO.png" width=48%/>
+    <img src="images/ambient_occlusion/african_head_SSAO.png" width=48%/>
+    <img src="images/ambient_occlusion/boggie_ambient_SSAO.png" width=48%/>
+    <img src="images/ambient_occlusion/boggie_SSAO.png" width=48%/>
+    <img src="images/ambient_occlusion/diablo3_pose_ambient_SSAO.png" width=48%/>
+    <img src="images/ambient_occlusion/diablo3_pose_SSAO.png" width=48%/>
+    </div>
+
+    </details>
+
 - [x] [**卡通渲染**](https://haqr.eu/tinyrenderer/toon/)：NPR（非写实渲染，一种旨在模拟艺术风格而非物理真实感的渲染技术）的一种，用鲜明的色彩区域取代平滑的渐变，并用粗线条强调轮廓，使渲染结果看上去更像手绘动画。
     - **Sobel 边缘检测**：类似卷积，用两个核（分别检测水平和竖直边缘）与图像的深度缓冲区做卷积，并结合两者结果，与某一阈值比较，大于阈值则将该像素设置为黑色，从而形成轮廓。
 
