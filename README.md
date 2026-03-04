@@ -165,6 +165,22 @@
 - [x] [**阴影映射**](https://haqr.eu/tinyrenderer/shadow/)
     - Phong 反射模型的问题：只考虑局部信息，未考虑因物体阻挡光线产生的**阴影**等全局效果；
     - 两次渲染获得两个深度缓冲区：第一次从**光源**出发，第二次从**相机**出发；然后比较同一对象坐标在这两个深度缓冲区上的取值（具体的坐标变换见教程），若光源的 z-buffer 值更大（片元离相机近，离光源远），说明该片元处于阴影中（我的处理是仅保留环境光）。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/shadowmap/african_head_shadow.png" width=48%/>
+    <img src="images/shadowmap/african_head_shadow_mapping.png" width=48%/>
+    <img src="images/shadowmap/boggie_shadow.png" width=48%/>
+    <img src="images/shadowmap/boggie_shadow_mapping.png" width=48%/>
+    <img src="images/shadowmap/diablo3_pose_shadow.png" width=48%/>
+    <img src="images/shadowmap/diablo3_pose_shadow_mapping.png" width=48%/>
+    </div>
+
+    </details>
+
 - [x] [间接光照](https://haqr.eu/tinyrenderer/ssao/)
     - Phong 反射模型的另一个问题是环境光是常数，未考虑周围光线情况，缺乏真实感；
     - 解决方案有**全局光照**和**环境遮蔽**（AO），由于前者计算量大，因此在我们的渲染器中采用后者
