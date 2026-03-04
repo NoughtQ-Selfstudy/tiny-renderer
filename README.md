@@ -1,5 +1,7 @@
 # tinyrenderer 代码实现
 
+>本仓库 `git clone` 自 <https://github.com/ssloy/tinyrenderer/>
+
 目标：使用 **C++**，在不借助任何第三方库的情况下实现一个**小型渲染器**（代码量为 500 行左右）。
 
 - 已提供 TGA 格式图片的处理 API，方便对图像进行操纵；
@@ -217,6 +219,21 @@
 
 - [x] [**卡通渲染**](https://haqr.eu/tinyrenderer/toon/)：NPR（非写实渲染，一种旨在模拟艺术风格而非物理真实感的渲染技术）的一种，用鲜明的色彩区域取代平滑的渐变，并用粗线条强调轮廓，使渲染结果看上去更像手绘动画。
     - **Sobel 边缘检测**：类似卷积，用两个核（分别检测水平和竖直边缘）与图像的深度缓冲区做卷积，并结合两者结果，与某一阈值比较，大于阈值则将该像素设置为黑色，从而形成轮廓。
+
+    <details>
+
+    <summary>点击展开/折叠</summary>
+
+    <div align=center>
+    <img src="images/toon/african_head_edges.png" width=48%/>
+    <img src="images/toon/african_head_toon.png" width=48%/>
+    <img src="images/toon/boggie_edges.png" width=48%/>
+    <img src="images/toon/boggie_toon.png" width=48%/>
+    <img src="images/toon/diablo3_pose_edges.png" width=48%/>
+    <img src="images/toon/diablo3_pose_toon.png" width=48%/>
+    </div>
+
+    </details>
 
 
 ## 未来考虑的优化方向
